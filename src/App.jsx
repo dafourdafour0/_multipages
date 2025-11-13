@@ -44,7 +44,7 @@ function App() {
 
   return (
     <>
-      <BrowserRouter basename="/multipages">
+      <BrowserRouter basename="/_multipages">
         <Routes>
           <Route element={<AppLayout products={products} carts={carts} setToken={setToken} />}>
             <Route path="/component" element={<Component />} />
