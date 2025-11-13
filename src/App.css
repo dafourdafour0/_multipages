@@ -1,0 +1,39 @@
+
+.container{
+    margin: auto;
+    width: fit-content;
+    border: 1px solid black;
+    padding: 1rem;
+}
+
+.field{
+    border: 1px solid black;
+    border-radius: 1;
+    margin-bottom: 20px;
+    background-image: url(img/beautiful-wood-background-with-text-space-free-vector.jpg);
+    background-position: center;
+    background-size: contain;
+    width: 700px;
+    height: 400px;
+}
+
+.ball{
+    border-radius: 50%;
+    border: 1px solid black;
+    background-color: lightgray;
+    /*background-image: url(img/basketball.png);*/
+    background-position: center;
+    background-size: contain;
+    width: 200px;
+    height: 200px;
+    position: relative;
+    /*fwiht - ballDaimeter -2*fBORDER*/
+    /*left : calc( 700px - 200px - 2px);*/
+    left: 0px;
+    top: 0px;
+}
+
+.control{
+    margin-top: 1rem;
+}
+
