@@ -1,42 +1,34 @@
-import { useEffect, useState, useRef } from "react";
-import { fetchTodos } from "../component/todos";
-import { Form, Table, Badge, Button, Modal, } from "react-bootstrap";
-
-
-
-
+import { useEffect, useRef, useState } from 'react'
+import { Badge, Button, Form, Table, Modal } from 'react-bootstrap'
+// import { fetchTodos } from '../data/todos'
+import { fetchTodos } from '../component/todos'
 
 const Todos = () => {
-
-
+    const newTitileRef = useRef()
     const newIdRef = useRef()
-    const newTitleRef = useRef()
-
-
+    //                    -----------------------
+    //                    |                      v
+    // [fetchTodos] -> todosRaw -> [filters] -> todos
     const [todosRaw, setTodosRaw] = useState([])
     const [todos, setTodos] = useState([])
+
     const [onlyWaiting, setOnlyWaiting] = useState(false)
-    const [itemPerPage, setitemPerPage] = useState(5)
-    const [numPages, setNumpages] = useState(3)
+    const [itemsPerPage, setItemsPerPage] = useState(5)
+
     const [curPage, setCurPage] = useState(1)
+    const [numPages, setNumPages] = useState(3)
 
-
-
-
-
-    //load
     useEffect(() => {
         setTodosRaw(fetchTodos())
-    }, [])
-
-    // console.log(todosRaw)
-    //bypass 
+    }, []) //load
 
     useEffect(() => {
         if (onlyWaiting) {
-            setTodos(todosRaw.filter((todo) => {
-                return !todo.completed
-            }))
+            setTodos(
+                todosRaw.filter((todo) => {
+                    return todo.completed === false
+                })
+            )
         } else {
             setTodos(todosRaw)
         }
@@ -44,98 +36,90 @@ const Todos = () => {
 
 
     useEffect(() => {
-        setNumpages(Math.ceil(todos.length / itemPerPage))
-    }, [todos, itemPerPage])
+        setNumPages(Math.ceil(todos.length / itemsPerPage))
+    }, [todos, itemsPerPage])
 
 
     useEffect(() => {
-
         if (numPages <= 0) setCurPage(0)
-        else { // has todos
-            if (curPage > numPages) setCurPage(numPages)
-            else if (curPage <= 0) setCurPage(1)
-        }
+        else if (curPage > numPages) setCurPage(numPages)
+        else if (curPage <= 0) setCurPage(1)
 
     }, [numPages])
 
 
-    const waitingClick = (id) => {
+    const deleteClick = (id) => {
+        setTodosRaw(todosRaw.filter((todo) => todo.id !== id))
+    }
+
+
+    const waitingClicked = (id) => {
         console.log(id)
+
+
         const foundTodo = todos.find((todo) => {
             return todo.id === id
         })
         foundTodo.completed = true
 
-        setTodosRaw([...todosRaw]) // force to be effect(refesh)
-
+        setTodosRaw([...todosRaw]) // force to be effect (refresh)
     }
 
-    const deleteClicked = (id) => {
-        const remainTodosRaw = todosRaw.filter( (todo) => 
-            todo.id !== id 
-        )
-
-        setTodosRaw(remainTodosRaw)
-    }
-
-    //handle modal
+    // handle modal
     const [show, setShow] = useState(false);
+
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
 
-    const saveClicke = (id, title) => {
-        /// .....
-        console.log(id, title)
+    const saveClicked = (id, title) => {
         if (title.trim() !== "") {
-            const newTodo = {
-                "userId": 1,
-                id,
-                title,
-                "completed": false,
-            }
-
-            setTodosRaw([...todosRaw, newTodo])
-
+            const newTodo =
+                setTodosRaw([...todosRaw, {
+                    userId: 1,
+                    id,
+                    title,
+                    completed: false
+                }])
         }
-        newIdRef.current.value = "  "
-        newTitleRef.current.value = "  "
+        newIdRef.current.value = ""
+        newTitileRef.current.value = ""
 
         handleClose()
     }
 
-
     return (
         <>
-            {/* modal */}
 
+            {/* modal------------------------------------------------------------------------------ */}
             <Modal show={show} onHide={handleClose}>
-
                 <Modal.Header closeButton>
+                    <Button style={{ pointerEvents: 'none' }}>
+                        <i className='bi bi-plus'></i>
+                    </Button>
+                    &nbsp;
+                    &nbsp;
                     <Modal.Title>Add todo</Modal.Title>
                 </Modal.Header>
 
                 <Modal.Body>
                     <Form>
-                        {/* First Form.Group - Email address with Label */}
                         <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
                             <Form.Label>ID:</Form.Label>
                             <Form.Control
-                                value={todosRaw.reduce((prev, todo) => {
-                                    return todo.id > prev ? todo.id : prev
-                                }, -1) + 1}
+
+                                value={todosRaw.reduce((prev, todo) => todo.id > prev ? todo.id : prev
+                                    , -1
+                                ) + 1}
+
                                 disabled={true}
                                 ref={newIdRef}
                             />
                         </Form.Group>
                         <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
-                            {/* Second Form.Group - Added for the second input */}
                             <Form.Label>Title:</Form.Label>
-                            <Form.Control
-
-                                placeholder="New Todo , Here !!!"
-                                autoFocus ref={newTitleRef}
-                            />
+                            <Form.Control placeholder="ใส่ todo " autoFocus ref={newTitileRef} />
                         </Form.Group>
+
                     </Form>
                 </Modal.Body>
 
@@ -143,128 +127,153 @@ const Todos = () => {
                     <Button variant="secondary" onClick={handleClose}>
                         Close
                     </Button>
-                    <Button variant="primary" onClick={() => saveClicke(Number(newIdRef.current.value), newTitleRef.current.value)
-
-                    }>
-                        Save
+                    <Button variant="primary" onClick={() => saveClicked(Number(newIdRef.current.value), newTitileRef.current.value)}>
+                        Save Changes
                     </Button>
                 </Modal.Footer>
 
-
             </Modal>
-            {/* modal */}
-            {/* filter */}
-            <Form>
-                <div className='d-flex justify-content-between align-item-center'>
-                    <div className="d-flex align-item-center">
-                        <Form.Check // prettier-ignore
-                            type="switch"
-                            id="custom-switch"
-                            // label="Show only waiting"
-                            onChange={(e) => setOnlyWaiting(e.target.checked)}
-                        />
-                        Show only &nbsp;<Button variant="warning" onClick={() => waitingClick(todo.id)} >Waiting&nbsp;<i className="bi bi-clock"></i></Button>
-                    </div>
+            {/* modal end------------------------------------------------------------------------------ */}
 
 
-                    <Form.Select aria-label="Default select example" className="w-25" onChange={(e) => setitemPerPage(e.target.value)} >
-                        {/* <option>Open this select menu</option> */}
-                        <option value={5}>5 item per page</option>
-                        <option value={10}>10 item per page</option>
-                        <option value={50}>50 item per page</option>
-                        <option value={100}>5 item per page</option>
-                    </Form.Select>
+
+
+
+
+
+
+
+
+
+
+            {/* filters */}
+            <div className='d-flex align-items-center justify-content-between mt-5'>
+                <div className='d-flex align-items-center'>
+                    <Form.Check // prettier-ignore
+                        type='switch'
+                        id='custom-switch'
+                        // label='Show only waiting'
+                        onChange={(e) => setOnlyWaiting(e.target.checked)}
+                    />
+                    <label htmlFor='custom-switch'>
+                        Show only&nbsp;
+                        <Button variant='warning' style={{ pointerEvents: 'none' }}>
+                            waiting&nbsp;<i className='bi bi-clock'></i>
+                        </Button>
+                    </label>
                 </div>
-            </Form>
+                <Form.Select
+                    aria-label='Default select example'
+                    className='w-25'
+                    onChange={(e) => setItemsPerPage(e.target.value)}
+                >
+                    <option value={5}>5 items per page</option>
+                    <option value={10}>10 items per page</option>
+                    <option value={50}>50 items per page</option>
+                    <option value={100}>100 items per page</option>
+                </Form.Select>
+            </div>
 
 
             {/* table */}
-            <div className="mt-2">
-                <Table striped bordered hover>
-                    <thead className="table-dark">
+            <div className='mt-2'>
+                <Table striped hover>
+                    <thead className='table-dark'>
                         <tr>
-                            <th className="text-center" style={{ width: '4rem' }}>ID</th>
-                            <th className="text-center">Title</th>
-                            <th className="text-end" style={{ width: '12rem' }}>Completed&nbsp;
+                            <th className='text-center' style={{ width: '4rem' }}>
+                                ID
+                            </th>
+                            <th className='text-center'>Title</th>
+                            <th className='text-end' style={{ width: '12rem' }}>
+                                Completed&nbsp;
                                 <Button onClick={() => handleShow()}>
-                                    < i className="bi bi-plus" ></i>
+                                    <i className='bi bi-plus'></i>
                                 </Button>
                             </th>
                         </tr>
                     </thead>
                     <tbody>
                         {
+                            // start = (curPage -1) x itemPerPage + 1 = 0
+                            // stop = curPage x itemsPerPage          = 5  
                             todos.filter((todo, index) => {
-                                return index >= (curPage - 1) * itemPerPage &&
-                                    index <= curPage * itemPerPage - 1
+                                return index >= (curPage - 1) * itemsPerPage
+                                    &&
+                                    index <= curPage * itemsPerPage - 1
+
                             })
-
-
-
                                 .map((todo) => {
                                     return (
                                         <tr key={todo.id}>
-                                            <td className="text-center"><Badge bg="secondary">{todo.id}</Badge></td>
+                                            <td className='text-center'>
+                                                <Badge bg='secondary'>{todo.id}</Badge>
+                                            </td>
                                             <td>{todo.title}</td>
-                                            <td className="text-end">
+                                            <td className='text-end'>
                                                 {todo.completed ? (
-                                                    <Badge bg='success' className="fs-6">done</Badge>
+                                                    <Badge bg='success'>
+                                                        done&nbsp;<i className='bi bi-check'></i>
+                                                    </Badge>
                                                 ) : (
-                                                    <Button variant="warning" onClick={() => waitingClick(todo.id)} >Waiting&nbsp;<i className="bi bi-clock"></i>
+                                                    <Button variant='warning' onClick={() => waitingClicked(todo.id)}>
+                                                        waiting&nbsp;<i className='bi bi-clock'></i>
                                                     </Button>
                                                 )}
                                                 &nbsp;
-                                                <Button
-                                                    variant="danger" onClick={() => deleteClicked(todo.id)}
+                                                <Button variant='danger' onClick={() => {
+                                                    deleteClick(todo.id)
+                                                }}>
 
-                                                >
-
-                                                    <i className="bi bi-trash"></i>
+                                                    <i className='bi bi-trash'></i>
                                                 </Button>
-
-
                                             </td>
                                         </tr>
                                     )
                                 })}
-
                     </tbody>
                 </Table>
             </div>
-
-
             {/* page control */}
-            <div className="text-center">
-                <Button variant="outline-primary"
-                    onClick={() => setCurPage(1)}
-                    disabled={curPage === 1}>
-                    First</Button>&nbsp;
-                <Button variant="outline-primary"
-                    disabled={curPage === 1}
-                    onClick={() => {
-                        if (curPage > 1) {
-                            setCurPage((p) => p - 1)
-                        }
-                    }}>Previous</Button>&nbsp;
-                <span>{curPage}&nbsp;/&nbsp;{numPages}&nbsp;</span>&nbsp;
+            <div className='text-center mt-2'>
                 <Button
-                    variant="outline-primary"
-                    disabled={curPage === numPages}
+                    variant='outline-primary'
+                    onClick={() => setCurPage(1)}
+                    disabled={curPage <= 1}
+                >
+                    First
+                </Button>
+                &nbsp;
+                <Button
+                    variant='outline-primary'
+                    onClick={() => curPage > 1 && setCurPage((p) => p - 1)}
+                    disabled={curPage <= 1}
+                >
+                    Previous
+                </Button>
+                &nbsp;
+                <span>
+                    {curPage}&nbsp;/&nbsp;{numPages}
+                </span>
+                &nbsp;
+                <Button
+                    variant='outline-primary'
+                    onClick={() => curPage < numPages && setCurPage((p) => p + 1)}
+                    disabled={curPage >= numPages}
+                >
+                    Next
+                </Button>
+                &nbsp;
+                <Button
+                    variant='outline-primary'
                     onClick={() => {
-                        if (curPage < numPages) {
-                            setCurPage((p) => p + 1)
-                        }
+                        setCurPage(numPages)
                     }}
-                >Next</Button>&nbsp;
-                <Button variant="outline-primary"
-                    disabled={curPage === numPages}
-                    onClick={() => setCurPage(numPages)}>
-                    Last</Button>
+                    disabled={curPage >= numPages}
+                >
+                    Last
+                </Button>
             </div>
-
         </>
-
-    );
+    )
 }
-
-export default Todos;
+export default Todos
